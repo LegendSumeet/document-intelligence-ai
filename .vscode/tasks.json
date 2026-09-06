@@ -1,0 +1,24 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Document Intelligence API",
+			"type": "shell",
+			"command": "uv",
+			"args": [
+				"run",
+				"python",
+				"-m",
+				"uvicorn",
+				"document_intelligence.api:app",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"8000"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

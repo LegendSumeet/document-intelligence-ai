@@ -1,0 +1,19 @@
+[project]
+name = "document-intelligence-ai"
+version = "0.1.0"
+description = "Local-first PageIndex document intelligence with verified citations"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+    "openai>=2.54.0",
+    "pageindex>=0.2.14",
+    "pymupdf>=1.28.2",
+    "python-dotenv>=1.2.3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.4.2"]
+
+[project.scripts]
+document-intelligence = "document_intelligence.cli:main"
