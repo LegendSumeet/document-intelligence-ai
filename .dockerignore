@@ -1,0 +1,8 @@
+.venv
+.git
+.env
+.env.*
+.pageindex
+__pycache__
+.pytest_cache
+*.pdf

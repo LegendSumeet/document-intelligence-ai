@@ -20,3 +20,5 @@ wheels/
 
 # Local reference documents
 test2.pdf
+*.egg-info
+.ruff_cache/

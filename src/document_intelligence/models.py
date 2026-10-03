@@ -71,3 +71,32 @@ class StructuredExtraction(BaseModel):
     schema_name: str
     data: dict[str, Any]
     citations: list[Citation]
+
+
+class PageAnalysis(BaseModel):
+    page: int
+    line_count: int
+    word_count: int
+    likely_scanned: bool
+    table_like: bool
+
+
+class AnalysisReport(BaseModel):
+    doc_id: str
+    name: str
+    page_count: int
+    total_lines: int
+    total_words: int
+    reading_time_minutes: float
+    text_coverage: float
+    likely_scanned_pages: list[int]
+    table_pages: list[int]
+    headings: list[dict[str, Any]]
+    entities: dict[str, list[str]]
+    pages: list[PageAnalysis]
+    warnings: list[str] = Field(default_factory=list)
+
+
+class SearchHit(BaseModel):
+    score: float
+    citation: Citation

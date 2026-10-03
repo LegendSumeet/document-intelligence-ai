@@ -6,10 +6,10 @@ from typing import Protocol
 
 from pageindex import PageIndexAPIError
 
-from .citations import evidence_for_pages, parse_page_spec
-from .config import Settings
-from .models import QueryEvent, QueryResult
-from .services import DocumentService, QueryService
+from ..config import Settings
+from ..core.citations import evidence_for_pages, parse_page_spec
+from ..models import QueryEvent, QueryResult
+from ..services import INSIGHT_PRESETS, DocumentService, QueryService
 
 
 def print_json(value) -> None:
@@ -124,7 +124,7 @@ def interactive_chat(
     while True:
         try:
             question = input("\nyou> ").strip()
-        except EOFError, KeyboardInterrupt:
+        except (EOFError, KeyboardInterrupt):
             print("\nSession ended.")
             return
         if not question:
@@ -202,6 +202,15 @@ def build_parser() -> argparse.ArgumentParser:
     for name in ("info", "structure"):
         command = commands.add_parser(name)
         command.add_argument("doc_id")
+    analyze = commands.add_parser("analyze", help="Deterministic document analysis.")
+    analyze.add_argument("doc_id")
+    search = commands.add_parser("search", help="Keyword search with line citations.")
+    search.add_argument("doc_id")
+    search.add_argument("query")
+    search.add_argument("--limit", type=int, default=10)
+    insights = commands.add_parser("insights", help="AI insight preset with citations.")
+    insights.add_argument("doc_id")
+    insights.add_argument("kind", choices=tuple(INSIGHT_PRESETS))
     pages = commands.add_parser("pages")
     pages.add_argument("doc_id")
     pages.add_argument("pages")
@@ -233,6 +242,18 @@ def main() -> int:
             print_json(documents.info(args.doc_id))
         elif args.command == "structure":
             print_json(documents.structure(args.doc_id))
+        elif args.command == "analyze":
+            print_json(documents.analyze(args.doc_id))
+        elif args.command == "search":
+            for hit in documents.search(args.doc_id, args.query, args.limit):
+                c = hit.citation
+                print(f"[{hit.score}] p{c.page} L{c.start_line}: {c.text}")
+        elif args.command == "insights":
+            print_json(
+                QueryService(settings, documents.client).insights(
+                    [args.doc_id], args.kind
+                )
+            )
         elif args.command == "pages":
             index = documents.line_index(args.doc_id)
             print(evidence_for_pages(index, parse_page_spec(args.pages)))

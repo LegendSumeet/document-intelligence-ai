@@ -4,7 +4,7 @@ from typing import Any, cast
 
 import pymupdf
 
-from .models import LineIndex, PageEvidence
+from ..models import LineIndex, PageEvidence
 
 
 def file_sha256(document: Path) -> str:

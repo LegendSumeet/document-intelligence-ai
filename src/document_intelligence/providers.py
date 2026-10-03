@@ -25,4 +25,6 @@ def create_azure_client(settings: Settings) -> AzureOpenAI:
         api_key=settings.azure_api_key,
         azure_endpoint=settings.azure_endpoint,
         api_version=settings.azure_api_version,
+        timeout=settings.azure_timeout_seconds,
+        max_retries=settings.azure_max_retries,
     )

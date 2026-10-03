@@ -308,3 +308,17 @@ A feature is marked Implemented only when:
 4. Unit or API tests cover the controlling behavior.
 5. Documentation states its guarantees and limitations.
 6. External model or provider calls are not required for deterministic tests.
+
+## Added In The Stability Release
+
+| Feature                          | Status      | Notes                                                     |
+| -------------------------------- | ----------- | --------------------------------------------------------- |
+| Citation repair retry            | Implemented | One automatic fix attempt before failing                  |
+| Evidence budget                  | Implemented | Trims trailing pages, reports `truncated`                 |
+| Azure timeout/retry settings     | Implemented | Env-configurable                                          |
+| Provider error mapping           | Implemented | 502 for model/retrieval failures, 404/422 for bad input   |
+| Session TTL, rate limit, request IDs | Implemented | In-memory, per process                                |
+| Document analysis                | Implemented | Scanned-page detection, tables, entities, headings, score |
+| Line-level search                | Implemented | Ranked hits with bounding boxes                           |
+| Insight presets                  | Implemented | summary, key_facts, risks, obligations, action_items      |
+| Robust JSON extraction           | Implemented | Handles code fences and stray braces                      |

@@ -7,10 +7,9 @@
 			"command": "uv",
 			"args": [
 				"run",
-				"python",
-				"-m",
 				"uvicorn",
-				"document_intelligence.api:app",
+				"document_intelligence.api:create_app",
+				"--factory",
 				"--host",
 				"127.0.0.1",
 				"--port",

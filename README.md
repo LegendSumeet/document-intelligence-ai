@@ -48,20 +48,20 @@ for indexing; retrieval quality depends more heavily on the chat model.
 Index a PDF once:
 
 ```bash
-uv run python main.py index ./test.pdf
+uv run document-intelligence index samples/test.pdf
 ```
 
 Running the same command again reuses the existing document ID. Use `--force`
 only when the PDF changed and you intentionally want a new index:
 
 ```bash
-uv run python main.py index ./test.pdf --force
+uv run document-intelligence index samples/test.pdf --force
 ```
 
 Save the returned document ID, then reuse the persisted index for questions:
 
 ```bash
-uv run python main.py ask DOC_ID "Tell me about Sumeet Vishwakarma"
+uv run document-intelligence ask DOC_ID "Tell me about Sumeet Vishwakarma"
 ```
 
 By default, `ask` first uses PageIndex to select relevant pages, then asks Azure
@@ -75,16 +75,16 @@ Sumeet is a founding engineer. <cite doc="test_1.pdf" page="1" lines="16-18"/>
 Useful options:
 
 ```bash
-uv run python main.py list
-uv run python main.py info DOC_ID
-uv run python main.py structure DOC_ID
-uv run python main.py pages DOC_ID "1-2"
-uv run python main.py ask DOC_ID "Summarize the document" --reasoning-effort high
-uv run python main.py ask DOC_ID "Summarize the document" --show-process
-uv run python main.py ask DOC_ID "Summarize the document" --json
-uv run python main.py ask DOC_ID "Summarize the document" --page-citations
-uv run python main.py extract DOC_ID "Extract education and work history"
-uv run python main.py chat --show-process
+uv run document-intelligence list
+uv run document-intelligence info DOC_ID
+uv run document-intelligence structure DOC_ID
+uv run document-intelligence pages DOC_ID "1-2"
+uv run document-intelligence ask DOC_ID "Summarize the document" --reasoning-effort high
+uv run document-intelligence ask DOC_ID "Summarize the document" --show-process
+uv run document-intelligence ask DOC_ID "Summarize the document" --json
+uv run document-intelligence ask DOC_ID "Summarize the document" --page-citations
+uv run document-intelligence extract DOC_ID "Extract education and work history"
+uv run document-intelligence chat --show-process
 ```
 
 The interactive `chat` command lists indexed documents first. Select one or
@@ -99,7 +99,7 @@ stage messages while retaining answer streaming.
 Compare or synthesize across documents by repeating `--with-doc`:
 
 ```bash
-uv run python main.py ask DOC_ID "Compare the candidates' experience" \
+uv run document-intelligence ask DOC_ID "Compare the candidates' experience" \
 	--with-doc ANOTHER_DOC_ID
 ```
 
@@ -112,7 +112,7 @@ result suitable for an API response or a source-highlighting interface.
 Start the local API:
 
 ```bash
-uv run fastapi dev document_intelligence/api.py
+uv run uvicorn document_intelligence.api:create_app --factory --reload
 ```
 
 Open `http://127.0.0.1:8000/docs` for the interactive OpenAPI interface. The API
@@ -147,3 +147,29 @@ events, OpenAI/Anthropic agent-tool adapters, full OCR export, and document
 deletion. Those are best added when the application has a session store, an
 event consumer, an agent framework, or an explicit confirmation flow rather
 than exposing them as loosely connected commands.
+
+## Analysis, search and insights
+
+Deterministic (no model calls):
+
+```bash
+uv run document-intelligence analyze <doc_id>        # stats, scanned pages, tables, entities, warnings
+uv run document-intelligence search <doc_id> "term"  # ranked hits with page/line/bbox citations
+```
+
+AI insights with verified citations (`summary`, `key_facts`, `risks`, `obligations`, `action_items`):
+
+```bash
+uv run document-intelligence insights <doc_id> risks
+```
+
+HTTP: `GET /documents/{id}/analysis`, `GET /documents/{id}/search?q=`,
+`GET /insights`, `POST /documents/{id}/insights/{kind}`, `GET /health/ready`.
+
+## Reliability behavior
+
+- Invalid citations trigger one automatic repair attempt before the query fails.
+- Evidence is trimmed to `DOCUMENT_INTELLIGENCE_MAX_EVIDENCE_CHARS`; the `evidence` stream event reports `truncated`.
+- Azure calls use configurable timeout/retries; provider failures return 502 instead of 500.
+- Idle chat sessions expire after the session TTL; requests are rate limited per client IP and tagged with `X-Request-ID`.
+- When a repair happens, clients should render the final `complete.answer`, not the streamed draft.

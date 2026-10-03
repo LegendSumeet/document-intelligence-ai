@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +18,11 @@ class Settings:
     chat_model: str
     client_api_key: str
     max_upload_bytes: int = 100 * 1024 * 1024
+    azure_timeout_seconds: float = 120.0
+    azure_max_retries: int = 3
+    max_evidence_chars: int = 120_000
+    session_ttl_seconds: int = 6 * 3600
+    rate_limit_per_minute: int = 120
     cors_origins: tuple[str, ...] = (
         "http://localhost",
         "http://localhost:3000",
@@ -33,6 +40,18 @@ class Settings:
                 raise ValueError(f"Missing required environment variable: {name}")
             return value
 
+        def number(name: str, default, cast):
+            raw = os.getenv(name)
+            if raw is None or not raw.strip():
+                return default
+            try:
+                value = cast(raw)
+            except ValueError as error:
+                raise ValueError(f"{name} must be a number, got {raw!r}") from error
+            if value < 0:
+                raise ValueError(f"{name} must not be negative")
+            return value
+
         return cls(
             storage_path=root,
             upload_path=root / "uploads",
@@ -42,6 +61,17 @@ class Settings:
             index_model=required("AZURE_OPENAI_PRIMARY_MODEL"),
             chat_model=required("AZURE_OPENAI_CHAT_MODEL"),
             client_api_key=required("DOCUMENT_INTELLIGENCE_API_KEY"),
+            azure_timeout_seconds=number("AZURE_OPENAI_TIMEOUT_SECONDS", 120.0, float),
+            azure_max_retries=number("AZURE_OPENAI_MAX_RETRIES", 3, int),
+            max_evidence_chars=number(
+                "DOCUMENT_INTELLIGENCE_MAX_EVIDENCE_CHARS", 120_000, int
+            ),
+            session_ttl_seconds=number(
+                "DOCUMENT_INTELLIGENCE_SESSION_TTL_SECONDS", 6 * 3600, int
+            ),
+            rate_limit_per_minute=number(
+                "DOCUMENT_INTELLIGENCE_RATE_LIMIT_PER_MINUTE", 120, int
+            ),
             cors_origins=tuple(
                 origin.strip()
                 for origin in os.getenv(

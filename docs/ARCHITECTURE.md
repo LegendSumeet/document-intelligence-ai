@@ -30,14 +30,14 @@ flowchart LR
 
 | Module                               | Responsibility                                                         |
 | ------------------------------------ | ---------------------------------------------------------------------- |
-| `document_intelligence/config.py`    | Environment validation and runtime paths                               |
-| `document_intelligence/models.py`    | Typed documents, evidence, citations, queries, and extraction results  |
-| `document_intelligence/providers.py` | PageIndex and Azure OpenAI client construction                         |
-| `document_intelligence/evidence.py`  | PDF hashing, numbered line extraction, bounding boxes, atomic sidecars |
-| `document_intelligence/citations.py` | Page selection parsing, evidence rendering, citation validation        |
-| `document_intelligence/services.py`  | Indexing, retrieval, grounded QA, and structured extraction workflows  |
-| `document_intelligence/cli.py`       | Terminal interface and compatibility commands                          |
-| `document_intelligence/api.py`       | HTTP upload, inspection, query, and extraction endpoints               |
+| `src/document_intelligence/config.py`    | Environment validation and runtime paths                               |
+| `src/document_intelligence/models.py`    | Typed documents, evidence, citations, queries, and extraction results  |
+| `src/document_intelligence/providers.py` | PageIndex and Azure OpenAI client construction                         |
+| `src/document_intelligence/evidence.py`  | PDF hashing, numbered line extraction, bounding boxes, atomic sidecars |
+| `src/document_intelligence/citations.py` | Page selection parsing, evidence rendering, citation validation        |
+| `src/document_intelligence/services.py`  | Indexing, retrieval, grounded QA, and structured extraction workflows  |
+| `src/document_intelligence/cli.py`       | Terminal interface and compatibility commands                          |
+| `src/document_intelligence/api.py`       | HTTP upload, inspection, query, and extraction endpoints               |
 | `main.py`                            | Stable CLI entry point                                                 |
 
 ## Implemented Workflows

@@ -1,6 +1,10 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "document-intelligence-ai"
-version = "0.1.0"
+version = "0.4.0"
 description = "Local-first PageIndex document intelligence with verified citations"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -13,7 +17,23 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["pytest>=8.4.2"]
+dev = ["pytest>=8.4.2", "ruff>=0.8"]
 
 [project.scripts]
 document-intelligence = "document_intelligence.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/document_intelligence"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]

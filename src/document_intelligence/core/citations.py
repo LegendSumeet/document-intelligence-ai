@@ -2,7 +2,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from .models import Citation, LineIndex
+from ..models import Citation, LineIndex
 
 LINE_CITATION_PATTERN = re.compile(
     r'<cite doc="(?P<doc>[^"]+)" page="(?P<page>\d+)" '

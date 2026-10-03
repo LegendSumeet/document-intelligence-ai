@@ -1,4 +1,5 @@
 import threading
+import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -16,6 +17,7 @@ class ChatSession:
     created_at: str = field(default_factory=utc_now)
     updated_at: str = field(default_factory=utc_now)
     busy: bool = False
+    last_used: float = field(default_factory=time.monotonic, repr=False)
 
     def public(self) -> dict:
         return {
@@ -29,10 +31,22 @@ class ChatSession:
 
 
 class SessionManager:
-    def __init__(self, max_history_messages: int = 20):
+    def __init__(self, max_history_messages: int = 20, ttl_seconds: int = 0):
         self.max_history_messages = max_history_messages
+        self.ttl_seconds = ttl_seconds
         self._sessions: dict[str, ChatSession] = {}
         self._lock = threading.RLock()
+
+    def _purge_expired(self) -> None:
+        if self.ttl_seconds <= 0:
+            return
+        cutoff = time.monotonic() - self.ttl_seconds
+        for key in [
+            key
+            for key, item in self._sessions.items()
+            if not item.busy and item.last_used < cutoff
+        ]:
+            del self._sessions[key]
 
     def create(self, document_ids: list[str]) -> ChatSession:
         if not document_ids:
@@ -41,14 +55,17 @@ class SessionManager:
             id=str(uuid.uuid4()), document_ids=list(dict.fromkeys(document_ids))
         )
         with self._lock:
+            self._purge_expired()
             self._sessions[session.id] = session
         return session
 
     def get(self, session_id: str) -> ChatSession:
         with self._lock:
+            self._purge_expired()
             session = self._sessions.get(session_id)
             if session is None:
                 raise KeyError(session_id)
+            session.last_used = time.monotonic()
             return session
 
     def update_documents(self, session_id: str, document_ids: list[str]) -> ChatSession:

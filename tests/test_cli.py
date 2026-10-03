@@ -2,8 +2,11 @@ import io
 import unittest
 from contextlib import redirect_stdout
 
-from document_intelligence.citations import parse_page_spec, validate_line_citations
-from document_intelligence.cli import parse_document_selection, stream_answer
+from document_intelligence.cli.commands import parse_document_selection, stream_answer
+from document_intelligence.core.citations import (
+    parse_page_spec,
+    validate_line_citations,
+)
 from document_intelligence.models import QueryEvent
 
 
