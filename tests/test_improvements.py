@@ -90,7 +90,7 @@ class ServiceHelperTests(unittest.TestCase):
         self.assertFalse(truncated)
 
 
-class FakeAzure:
+class FakeLLM:
     def __init__(self, first: str, repaired: str):
         self.first, self.repaired, self.calls = first, repaired, []
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self.create))
@@ -117,9 +117,7 @@ class RepairTests(unittest.TestCase):
         settings = Settings(
             storage_path=root,
             upload_path=root / "u",
-            azure_api_key="k",
-            azure_endpoint="https://e",
-            azure_api_version="v",
+            gemini_api_key="k",
             index_model="i",
             chat_model="c",
             client_api_key="t",
@@ -132,7 +130,7 @@ class RepairTests(unittest.TestCase):
         service.client = SimpleNamespace(
             chat=lambda *a, **k: '<cite doc="report.pdf" page="1"/>'
         )
-        service.azure = FakeAzure(first, repaired)
+        service.llm = FakeLLM(first, repaired)
         return service
 
     def test_repairs_invalid_citation(self) -> None:
@@ -141,7 +139,18 @@ class RepairTests(unittest.TestCase):
         result = service.ask(["doc-1"], "How did revenue change?")
         self.assertEqual(result.answer, good)
         self.assertEqual(result.citations[0].start_line, 2)
-        self.assertEqual(len(service.azure.calls), 2)
+        self.assertEqual(len(service.llm.calls), 2)
+
+    def test_answer_prompt_requires_markdown(self) -> None:
+        answer = 'Revenue grew. <cite doc="report.pdf" page="1" lines="2"/>'
+        service = self.build(answer, "")
+
+        service.ask(["doc-1"], "How did revenue change?")
+
+        prompt = service.llm.calls[0]["messages"][0]["content"]
+        self.assertIn("Markdown only", prompt)
+        self.assertIn("Do not emit HTML", prompt)
+        self.assertIn("citation markers inline", prompt)
 
     def test_unrepairable_raises(self) -> None:
         service = self.build("no cites", "still none")
@@ -201,9 +210,7 @@ class ApiFeatureTests(unittest.TestCase):
         settings = Settings(
             storage_path=root,
             upload_path=root / "u",
-            azure_api_key="k",
-            azure_endpoint="https://e",
-            azure_api_version="v",
+            gemini_api_key="k",
             index_model="i",
             chat_model="c",
             client_api_key="secret",

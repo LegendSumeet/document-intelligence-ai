@@ -1,6 +1,6 @@
 # Document Intelligence with PageIndex Flash
 
-This project uses `PageIndexClient` in local mode with Azure OpenAI. PageIndex
+This project uses `PageIndexClient` in local mode with Gemini. PageIndex
 Flash builds a hierarchical tree from a PDF's existing text and layout. A local
 PyMuPDF evidence index adds numbered lines and bounding boxes for verified
 line-level citations without PageIndex Cloud.
@@ -33,15 +33,11 @@ uv run pytest -q
 Create a `.env` file containing:
 
 ```dotenv
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=https://YOUR-RESOURCE.openai.azure.com
-AZURE_OPENAI_API_VERSION=...
-AZURE_OPENAI_PRIMARY_MODEL=YOUR-LOW-COST-INDEX-DEPLOYMENT
-AZURE_OPENAI_CHAT_MODEL=YOUR-STRONG-CHAT-DEPLOYMENT
+GEMINI_API_KEY=...
+DOCUMENT_INTELLIGENCE_API_KEY=...
 ```
 
-The model values are Azure deployment names. A smaller model is usually enough
-for indexing; retrieval quality depends more heavily on the chat model.
+The app uses `gemini-3.8-flash` for both indexing and chat.
 
 ## Usage
 
@@ -64,7 +60,7 @@ Save the returned document ID, then reuse the persisted index for questions:
 uv run document-intelligence ask DOC_ID "Tell me about Sumeet Vishwakarma"
 ```
 
-By default, `ask` first uses PageIndex to select relevant pages, then asks Azure
+By default, `ask` first uses PageIndex to select relevant pages, then asks Gemini
 OpenAI to answer only from locally numbered evidence. It validates that every
 result contains citations whose document, page, and line ranges exist:
 
@@ -92,9 +88,9 @@ multiple documents by number, then ask questions against that fixed scope. Use
 `docs` to view the current selection, `use` to change it, and `exit` to finish.
 Each question displays document scoping, PageIndex tree retrieval, selected
 evidence pages, grounded generation, and citation validation. Answer tokens are
-streamed as a draft and marked verified only after all citations pass. Recent
-turns are kept in memory for follow-up questions. Use `--quiet-process` to hide
-stage messages while retaining answer streaming.
+streamed as Markdown source drafts and marked verified only after all citations
+pass. Recent turns are kept in memory for follow-up questions. Use
+`--quiet-process` to hide stage messages while retaining answer streaming.
 
 Compare or synthesize across documents by repeating `--with-doc`:
 
@@ -170,6 +166,6 @@ HTTP: `GET /documents/{id}/analysis`, `GET /documents/{id}/search?q=`,
 
 - Invalid citations trigger one automatic repair attempt before the query fails.
 - Evidence is trimmed to `DOCUMENT_INTELLIGENCE_MAX_EVIDENCE_CHARS`; the `evidence` stream event reports `truncated`.
-- Azure calls use configurable timeout/retries; provider failures return 502 instead of 500.
+- Gemini calls use configurable timeout/retries; provider failures return 502 instead of 500.
 - Idle chat sessions expire after the session TTL; requests are rate limited per client IP and tagged with `X-Request-ID`.
 - When a repair happens, clients should render the final `complete.answer`, not the streamed draft.

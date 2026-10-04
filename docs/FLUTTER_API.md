@@ -207,10 +207,14 @@ event: answer_delta
 data: {"type":"answer_delta","stage":"generation","delta":"Revenue "}
 ```
 
-Display deltas as an unverified draft. Mark the answer verified only after the
-`validation` event, and reconcile the accumulated text with `complete.data`.
-An `error` event means the turn failed and may be retried. Only one message may
-run per session; concurrent requests receive HTTP `409`.
+Generated answer text in `answer_delta` and `complete.data.answer` is Markdown
+source, not rendered HTML. Append the deltas to a buffer and render the
+accumulated text with a Markdown renderer; keep the inline `<cite .../>` markers
+available to the app's citation controls. Display deltas as an unverified draft.
+Mark the answer verified only after the `validation` event, and reconcile the
+accumulated text with `complete.data`. An `error` event means the turn failed
+and may be retried. Only one message may run per session; concurrent requests
+receive HTTP `409`.
 
 Flutter's `http` package can consume the response body:
 

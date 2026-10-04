@@ -112,9 +112,7 @@ class ApiTests(unittest.TestCase):
         self.settings = Settings(
             storage_path=root,
             upload_path=root / "uploads",
-            azure_api_key="key",
-            azure_endpoint="https://example.openai.azure.com",
-            azure_api_version="2024-10-21",
+            gemini_api_key="key",
             index_model="index",
             chat_model="chat",
             client_api_key="flutter-test-key",

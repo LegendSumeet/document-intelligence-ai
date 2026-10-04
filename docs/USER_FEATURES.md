@@ -124,8 +124,8 @@ marked as validated only after all citation locations pass validation.
 ### Local Document Indexes
 
 Document indexes and extracted line evidence are stored locally by the current
-application. Azure OpenAI is used to perform AI generation, so selected evidence
-is sent to the configured Azure OpenAI service.
+application. Gemini is used to perform AI generation, so selected evidence
+is sent to the configured Gemini API.
 
 ## Supported Documents
 

@@ -4,7 +4,7 @@
 
 Build a local-first document intelligence service around PageIndex Flash with
 traceable evidence. The system uses PageIndex for hierarchical document
-retrieval, PyMuPDF for line and bounding-box extraction, and Azure OpenAI for
+retrieval, PyMuPDF for line and bounding-box extraction, and Gemini for
 grounded answer generation.
 
 Persistent application storage, user accounts, durable jobs, and deployment
@@ -22,7 +22,7 @@ flowchart LR
     Documents --> Evidence[Local Line Evidence]
     Queries --> PageIndex
     Queries --> Evidence
-    Queries --> Azure[Azure OpenAI]
+    Queries --> LLM[Gemini]
     Queries --> Validator[Citation Validator]
 ```
 
@@ -32,7 +32,7 @@ flowchart LR
 | ------------------------------------ | ---------------------------------------------------------------------- |
 | `src/document_intelligence/config.py`    | Environment validation and runtime paths                               |
 | `src/document_intelligence/models.py`    | Typed documents, evidence, citations, queries, and extraction results  |
-| `src/document_intelligence/providers.py` | PageIndex and Azure OpenAI client construction                         |
+| `src/document_intelligence/providers.py` | PageIndex and Gemini client construction                         |
 | `src/document_intelligence/evidence.py`  | PDF hashing, numbered line extraction, bounding boxes, atomic sidecars |
 | `src/document_intelligence/citations.py` | Page selection parsing, evidence rendering, citation validation        |
 | `src/document_intelligence/services.py`  | Indexing, retrieval, grounded QA, and structured extraction workflows  |
@@ -55,13 +55,13 @@ flowchart LR
 
 1. PageIndex reasons over the tree and identifies relevant pages.
 2. The service loads only those pages from the local line evidence.
-3. Azure OpenAI answers with mandatory document/page/line citations.
+3. Gemini answers with mandatory document/page/line citations.
 4. The validator rejects unknown documents, pages outside supplied evidence,
    missing citations, and out-of-range lines.
 5. JSON responses resolve citations to exact source text and bounding boxes.
 
 Interactive chat emits explicit `scope`, `retrieval`, `evidence`, `generation`,
-and `validation` stages. Azure answer deltas are printed immediately as a draft;
+and `validation` stages. Gemini answer deltas are printed immediately as a draft;
 the CLI marks completion as verified only after citation validation succeeds.
 Recent turns are carried in memory for contextual follow-up questions, but are
 not persisted between processes.
@@ -96,7 +96,7 @@ instructions.
 | `POST` | `/queries`                     | Verified line-cited QA               |
 | `POST` | `/extractions`                 | Evidence-backed JSON extraction      |
 
-Blocking PageIndex and Azure SDK calls run in FastAPI's thread pool. Uploads are
+Blocking PageIndex and LLM SDK calls run in FastAPI's thread pool. Uploads are
 streamed with a configurable size limit and preserve the original filename.
 
 ## Running

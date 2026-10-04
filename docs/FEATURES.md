@@ -16,7 +16,7 @@ working behavior from planned work so product claims stay aligned with the code.
 
 The application is a local-first document intelligence system for text-based
 PDFs. PageIndex Flash builds hierarchical document indexes, PyMuPDF creates
-numbered line evidence with PDF coordinates, and Azure OpenAI produces grounded
+numbered line evidence with PDF coordinates, and Gemini produces grounded
 answers and structured extractions.
 
 ```mermaid
@@ -26,8 +26,8 @@ flowchart LR
     Flash --> Retrieval[Relevant Page Retrieval]
     Lines --> Evidence[Numbered Evidence]
     Retrieval --> Evidence
-    Evidence --> Azure[Azure OpenAI]
-    Azure --> Validation[Citation Validation]
+    Evidence --> LLM[Gemini]
+    Gemini --> Validation[Citation Validation]
     Validation --> CLI[CLI Result]
     Validation --> API[API Result]
 ```
@@ -95,7 +95,7 @@ flowchart LR
 | Citation source resolution            | Implemented | Returns exact cited text and bounding boxes               |
 | Multi-document citation validation    | Implemented | Validates against each selected document independently    |
 | Prompt-injection boundary             | Implemented | Document evidence is explicitly treated as untrusted data |
-| Azure usage telemetry                 | Implemented | JSON results include provider token and latency metadata  |
+| Gemini usage telemetry                 | Implemented | JSON results include provider token and latency metadata  |
 | Claim entailment verification         | Planned     | Classify claims as supported, partial, or unsupported     |
 | Unsupported-claim regeneration        | Planned     | Rewrite or remove claims that fail verification           |
 | Evidence-based confidence score       | Planned     | Based on support coverage, not model self-confidence      |
@@ -195,7 +195,7 @@ before describing answers as fact-verified, legally verified, or compliant.
 | `POST`   | `/chat/sessions/{id}/messages`        | Implemented | Send a contextual message with JSON response         |
 | `POST`   | `/chat/sessions/{id}/messages/stream` | Implemented | Stream process and answer events over SSE            |
 
-Blocking PageIndex and Azure calls run in FastAPI's thread pool rather than on
+Blocking PageIndex and Gemini calls run in FastAPI's thread pool rather than on
 the event loop. API uploads are streamed to temporary files and closed after
 processing.
 
@@ -211,7 +211,7 @@ processing.
 | Interactive CLI conversation      | Implemented | Fixed document scope with in-session reselection   |
 | In-memory follow-up context       | Implemented | Recent turns inform retrieval and generation       |
 | Live process stages               | Implemented | Scope, retrieval, evidence, generation, validation |
-| Token-by-token answer streaming   | Implemented | Azure response deltas stream before validation     |
+| Token-by-token answer streaming   | Implemented | Gemini response deltas stream before validation     |
 | Persistent conversation history   | Deferred    | Requires session storage decision                  |
 | Human feedback on answers         | Planned     | Capture accepted/rejected claims and citations     |
 
@@ -219,7 +219,7 @@ processing.
 
 | Feature                       | Status      | Notes                                               |
 | ----------------------------- | ----------- | --------------------------------------------------- |
-| Environment validation        | Implemented | Missing Azure configuration fails clearly           |
+| Environment validation        | Implemented | Missing Gemini configuration fails clearly           |
 | PDF extension validation      | Implemented | CLI and API reject unsupported file types           |
 | Upload size control           | Implemented | Configurable maximum size                           |
 | Atomic line-index replacement | Implemented | Readers do not observe partial writes               |
@@ -315,7 +315,7 @@ A feature is marked Implemented only when:
 | -------------------------------- | ----------- | --------------------------------------------------------- |
 | Citation repair retry            | Implemented | One automatic fix attempt before failing                  |
 | Evidence budget                  | Implemented | Trims trailing pages, reports `truncated`                 |
-| Azure timeout/retry settings     | Implemented | Env-configurable                                          |
+| Gemini timeout/retry settings     | Implemented | Env-configurable                                          |
 | Provider error mapping           | Implemented | 502 for model/retrieval failures, 404/422 for bad input   |
 | Session TTL, rate limit, request IDs | Implemented | In-memory, per process                                |
 | Document analysis                | Implemented | Scanned-page detection, tables, entities, headings, score |
